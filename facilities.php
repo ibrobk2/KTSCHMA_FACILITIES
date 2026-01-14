@@ -25,6 +25,7 @@ getHeader('Facilities');
                 <thead>
                     <tr>
                         <th>Facility Name</th>
+                        <th>Code</th>
                         <th>LGA</th>
                         <th>Address</th>
                         <th>Actions</th>
@@ -35,6 +36,7 @@ getHeader('Facilities');
                         <?php foreach ($facilities as $fac): ?>
                         <tr>
                             <td><?php echo cleanInput($fac['facility_name']); ?></td>
+                            <td><?php echo cleanInput($fac['facility_code']); ?></td>
                             <td><?php echo cleanInput($fac['lga']); ?></td>
                             <td><?php echo cleanInput($fac['address']); ?></td>
                             <td>

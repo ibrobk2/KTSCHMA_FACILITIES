@@ -12,6 +12,7 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 CREATE TABLE IF NOT EXISTS `facilities` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `facility_name` varchar(255) NOT NULL,
+  `facility_code` varchar(50) NOT NULL,
   `lga` varchar(100) NOT NULL,
   `address` text,
   `created_at` datetime NOT NULL,

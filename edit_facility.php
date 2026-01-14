@@ -24,14 +24,15 @@ $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = cleanInput($_POST['facility_name']);
+    $code = cleanInput($_POST['facility_code']);
     $lga = cleanInput($_POST['lga']);
     $address = cleanInput($_POST['address']);
 
-    if (empty($name) || empty($lga)) {
-        $error = 'Facility Name and LGA are required.';
+    if (empty($name) || empty($code) || empty($lga)) {
+        $error = 'Facility Name, Code and LGA are required.';
     } else {
-        $stmt = $db->prepare("UPDATE facilities SET facility_name=?, lga=?, address=? WHERE id=?");
-        if ($stmt->execute(array($name, $lga, $address, $id))) {
+        $stmt = $db->prepare("UPDATE facilities SET facility_name=?, facility_code=?, lga=?, address=? WHERE id=?");
+        if ($stmt->execute(array($name, $code, $lga, $address, $id))) {
             $_SESSION['success'] = "Facility updated successfully!";
             header("Location: facilities.php");
             exit();
@@ -59,6 +60,10 @@ getHeader('Edit Facility');
                     <div class="mb-3">
                         <label class="form-label">Facility Name <span class="text-danger">*</span></label>
                         <input type="text" name="facility_name" class="form-control" value="<?php echo cleanInput($facility['facility_name']); ?>" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Facility Code <span class="text-danger">*</span></label>
+                        <input type="text" name="facility_code" class="form-control" value="<?php echo cleanInput($facility['facility_code']); ?>" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">LGA <span class="text-danger">*</span></label>

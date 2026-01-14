@@ -20,7 +20,7 @@ if (isset($_GET['facility_id']) && $_GET['facility_id'] != '') {
     $params[] = $_GET['facility_id'];
 }
 
-$query = "SELECT r.*, f.facility_name, u.full_name 
+$query = "SELECT r.*, f.facility_name, f.facility_code, u.full_name 
           FROM returns r 
           JOIN facilities f ON r.facility_id = f.id 
           JOIN users u ON r.user_id = u.id 
@@ -45,7 +45,7 @@ getHeader('All Returns');
                     <option value="">All Facilities</option>
                     <?php foreach($facilities as $fac): ?>
                         <option value="<?php echo $fac['id']; ?>" <?php echo (isset($_GET['facility_id']) && $_GET['facility_id'] == $fac['id']) ? 'selected' : ''; ?>>
-                            <?php echo $fac['facility_name']; ?>
+                            [<?php echo $fac['facility_code']; ?>] <?php echo $fac['facility_name']; ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
@@ -87,7 +87,10 @@ getHeader('All Returns');
                     <?php if (count($returns) > 0): ?>
                         <?php foreach ($returns as $row): ?>
                         <tr>
-                            <td><?php echo $row['facility_name']; ?></td>
+                            <td>
+                                <strong><?php echo $row['facility_name']; ?></strong><br>
+                                <small class="text-muted"><?php echo $row['facility_code']; ?></small>
+                            </td>
                             <td><?php echo $row['full_name']; ?></td>
                             <td><?php echo $row['month'] . ' ' . $row['year']; ?></td>
                             <td><?php echo formatCurrency($row['amount_received']); ?></td>

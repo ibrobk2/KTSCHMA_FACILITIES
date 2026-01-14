@@ -111,7 +111,7 @@ getHeader('Edit User');
                                 <option value="">Select Facility</option>
                                 <?php foreach ($facilities as $fac): ?>
                                     <option value="<?php echo $fac['id']; ?>" <?php echo $user['facility_id'] == $fac['id'] ? 'selected' : ''; ?>>
-                                        <?php echo $fac['facility_name']; ?>
+                                        [<?php echo $fac['facility_code']; ?>] <?php echo $fac['facility_name']; ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>

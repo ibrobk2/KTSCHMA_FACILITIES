@@ -44,7 +44,7 @@ $total_utilized = $util_stats['total_utilized'] ?: 0;
 $balance = $total_received - $total_utilized;
 
 // 2. Fetch Detailed Data for Table
-$query_list = "SELECT r.*, f.facility_name 
+$query_list = "SELECT r.*, f.facility_name, f.facility_code 
                FROM returns r 
                JOIN facilities f ON r.facility_id = f.id 
                WHERE $where AND r.status = 'Submitted' 
@@ -78,7 +78,7 @@ getHeader('Reports');
                             <option value="">All Facilities</option>
                             <?php foreach($facilities as $fac): ?>
                                 <option value="<?php echo $fac['id']; ?>" <?php echo $facility_id == $fac['id'] ? 'selected' : ''; ?>>
-                                    <?php echo $fac['facility_name']; ?>
+                                    [<?php echo $fac['facility_code']; ?>] <?php echo $fac['facility_name']; ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -129,6 +129,7 @@ getHeader('Reports');
                 <thead>
                     <tr>
                         <th>Facility</th>
+                        <th>Code</th>
                         <th>Month</th>
                         <th>Allocation Received</th>
                         <!-- Note: Getting actual utilization per return requires subquery or separate fetching logic which is heavy. 
@@ -150,6 +151,7 @@ getHeader('Reports');
                         ?>
                         <tr>
                             <td><?php echo $row['facility_name']; ?></td>
+                            <td><?php echo $row['facility_code']; ?></td>
                             <td><?php echo $row['month']; ?></td>
                             <td><?php echo formatCurrency($row['amount_received']); ?></td>
                             <td><?php echo formatCurrency($u_amt); ?></td>

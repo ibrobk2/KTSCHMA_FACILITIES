@@ -84,7 +84,7 @@ getHeader('Add User');
                             <select name="facility_id" class="form-control">
                                 <option value="">Select Facility</option>
                                 <?php foreach ($facilities as $fac): ?>
-                                    <option value="<?php echo $fac['id']; ?>"><?php echo $fac['facility_name']; ?></option>
+                                    <option value="<?php echo $fac['id']; ?>">[<?php echo $fac['facility_code']; ?>] <?php echo $fac['facility_name']; ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>

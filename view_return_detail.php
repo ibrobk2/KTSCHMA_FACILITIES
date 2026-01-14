@@ -16,7 +16,7 @@ $user_id = $_SESSION['user_id'];
 $is_admin = isAdmin();
 
 // Fetch Return Details
-$query = "SELECT r.*, f.facility_name, u.full_name 
+$query = "SELECT r.*, f.facility_name, f.facility_code, u.full_name 
           FROM returns r 
           JOIN facilities f ON r.facility_id = f.id 
           JOIN users u ON r.user_id = u.id 
@@ -82,7 +82,7 @@ getHeader('Return Details');
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-4">
-                        <p><strong>Facility:</strong> <?php echo $return['facility_name']; ?></p>
+                        <p><strong>Facility:</strong> <?php echo $return['facility_name']; ?> (<?php echo $return['facility_code']; ?>)</p>
                         <p><strong>Submitted By:</strong> <?php echo $return['full_name']; ?></p>
                     </div>
                     <div class="col-md-4">

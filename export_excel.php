@@ -17,7 +17,7 @@ header('Content-Disposition: attachment; filename=healthcare_report_' . date('Ym
 $output = fopen('php://output', 'w');
 
 // Output Column Headings
-fputcsv($output, array('Facility Name', 'Month', 'Year', 'Allocation Received', 'Total Utilized', 'Balance', 'Date Submitted'));
+fputcsv($output, array('Facility Name', 'Facility Code', 'Month', 'Year', 'Allocation Received', 'Total Utilized', 'Balance', 'Date Submitted'));
 
 // Build Query
 $where = "r.year = ?";
@@ -28,7 +28,7 @@ if ($facility_id) {
     $params[] = $facility_id;
 }
 
-$query = "SELECT r.*, f.facility_name 
+$query = "SELECT r.*, f.facility_name, f.facility_code 
           FROM returns r 
           JOIN facilities f ON r.facility_id = f.id 
           WHERE $where AND r.status = 'Submitted' 
@@ -46,6 +46,7 @@ while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     
     fputcsv($output, array(
         $row['facility_name'],
+        $row['facility_code'],
         $row['month'],
         $row['year'],
         $row['amount_received'],
