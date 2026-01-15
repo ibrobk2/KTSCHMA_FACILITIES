@@ -29,6 +29,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validate
     if (!$facility_id) {
         $error = "You are not assigned to a facility. Contact Admin.";
+    } else {
+        // Validate Facility Exists
+        $facStmt = $db->prepare("SELECT id FROM facilities WHERE id = ?");
+        $facStmt->execute([$facility_id]);
+        if ($facStmt->rowCount() === 0) {
+            $error = "Your assigned facility appears to be invalid or deleted. Please contact the administrator.";
+        }
+    }
+
+    if ($error) {
+        // Fall through to display error
     } elseif (empty($month) || empty($year)) {
         $error = "Month and Year are required.";
     } elseif ($balance_before === '' || $capitation === '' || $fee_for_service === '') {
