@@ -27,6 +27,9 @@ getHeader('Manage Users');
         </a>
     </div>
     <div class="card-body">
+        <div class="mb-3">
+            <input type="text" id="liveSearchInput" class="form-control" placeholder="Search Users...">
+        </div>
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>

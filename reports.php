@@ -124,6 +124,9 @@ getHeader('Reports');
         Submitted Returns Details (<?php echo $year; ?>)
     </div>
     <div class="card-body">
+        <div class="mb-3">
+            <input type="text" id="liveSearchInput" class="form-control" placeholder="Search Reports...">
+        </div>
         <div class="table-responsive">
             <table class="table table-bordered table-striped">
                 <thead>

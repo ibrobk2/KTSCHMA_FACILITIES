@@ -70,6 +70,9 @@ getHeader('All Returns');
         <i class="bi bi-list-check"></i> All Monthly Returns
     </div>
     <div class="card-body">
+        <div class="mb-3">
+            <input type="text" id="liveSearchInput" class="form-control" placeholder="Search Returns...">
+        </div>
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>

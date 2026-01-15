@@ -255,8 +255,18 @@ function getFooter() {
         </div>
         
         <!-- Scripts -->
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            $(document).ready(function(){
+                $("#liveSearchInput").on("keyup", function() {
+                    var value = $(this).val().toLowerCase();
+                    $(".table tbody tr").filter(function() {
+                        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                    });
+                });
+            });
+        </script>
     </body>
     </html>
     <?php

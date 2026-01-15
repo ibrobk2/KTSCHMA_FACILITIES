@@ -106,6 +106,9 @@ getHeader('Dashboard');
         <i class="bi bi-clock-history"></i> Recent Activity
     </div>
     <div class="card-body">
+        <div class="mb-3">
+             <input type="text" id="liveSearchInput" class="form-control" placeholder="Search Recent Activity...">
+        </div>
         <?php if (count($recent_returns) > 0): ?>
             <div class="table-responsive">
                 <table class="table table-hover">
