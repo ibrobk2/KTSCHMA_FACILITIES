@@ -15,6 +15,13 @@ function requireLogin() {
         header("Location: index.php");
         exit();
     }
+    
+    // Check if Program is Selected (Skip for select_program.php to avoid loop)
+    $current_page = basename($_SERVER['PHP_SELF']);
+    if (!isset($_SESSION['program']) && $current_page !== 'select_program.php' && $current_page !== 'logout.php') {
+        header("Location: select_program.php");
+        exit();
+    }
 }
 
 function requireAdmin() {

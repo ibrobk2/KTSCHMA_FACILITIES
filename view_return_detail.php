@@ -46,7 +46,9 @@ $utilizations = $stmt_util->fetchAll(PDO::FETCH_ASSOC);
 // Calculate Totals
 $total_utilized = 0;
 foreach ($utilizations as $u) {
-    $total_utilized += $u['amount'];
+    if ($u['status'] == 'Approved') {
+        $total_utilized += $u['amount'];
+    }
 }
 $balance = $return['amount_received'] - $total_utilized;
 
@@ -130,8 +132,22 @@ getHeader('Return Details');
                         <?php foreach($utilizations as $util): ?>
                         <tr>
                             <td><?php echo formatDate($util['date_spent']); ?></td>
-                            <td><?php echo cleanInput($util['description']); ?></td>
-                            <td><?php echo formatCurrency($util['amount']); ?></td>
+                            <td><?php echo cleanInput($util['description']); ?> <span class="badge bg-secondary"><?php echo $util['expenditure_type']; ?></span></td>
+                            <td>
+                                <?php echo formatCurrency($util['amount']); ?>
+                                <br>
+                                <?php if($util['status'] == 'Approved'): ?>
+                                    <span class="badge bg-success">Approved</span>
+                                <?php elseif($util['status'] == 'Pending'): ?>
+                                    <span class="badge bg-warning text-dark">Pending Approval</span>
+                                <?php else: ?>
+                                    <span class="badge bg-danger">Rejected</span>
+                                <?php endif; ?>
+                                
+                                <?php if($util['request_note']): ?>
+                                    <br><small class="text-danger"><i class="bi bi-info-circle"></i> <?php echo $util['request_note']; ?></small>
+                                <?php endif; ?>
+                            </td>
                             <td>
                                 <?php if($util['receipt_file']): ?>
                                     <a href="uploads/receipts/<?php echo $util['receipt_file']; ?>" target="_blank" class="btn btn-sm btn-info">View File</a>
@@ -140,6 +156,14 @@ getHeader('Return Details');
                                 <?php endif; ?>
                             </td>
                             <td>
+                                <?php if($is_admin && $util['status'] == 'Pending'): ?>
+                                    <a href="approve_utilization.php?id=<?php echo $util['id']; ?>&action=approve" class="btn btn-sm btn-success" title="Approve">
+                                        <i class="bi bi-check-lg"></i>
+                                    </a>
+                                    <a href="approve_utilization.php?id=<?php echo $util['id']; ?>&action=reject" class="btn btn-sm btn-danger" title="Reject">
+                                        <i class="bi bi-x-lg"></i>
+                                    </a>
+                                <?php endif; ?>
                                 <a href="edit_utilization.php?id=<?php echo $util['id']; ?>" class="btn btn-sm btn-warning">
                                     <i class="bi bi-pencil"></i>
                                 </a>

@@ -7,12 +7,23 @@ requireAdmin();
 $db = Database::getInstance()->getConnection();
 
 // Filters
-$where = "1=1";
-$params = array();
+$program = $_SESSION['program'];
+$where = "r.program = ?";
+$params = array($program);
 
 if (isset($_GET['status']) && $_GET['status'] != '') {
-    $where .= " AND r.status = ?";
-    $params[] = $_GET['status'];
+    if ($_GET['status'] == 'PendingApproval') {
+        // Find returns that have ANY pending utilization
+        // This requires a subquery or join. A better approach for the link might be to filters users who have pending items?
+        // Or simpler: Show returns where status is not fully approved?
+        // Actually, the request is "expenditure(s) waiting for approval".
+        // The View Returns page currently lists *Monthly Returns*, not utilizations.
+        // So we should find Returns that contain Pending utilizations.
+        $where .= " AND r.id IN (SELECT return_id FROM utilizations WHERE status = 'Pending')";
+    } else {
+        $where .= " AND r.status = ?";
+        $params[] = $_GET['status'];
+    }
 }
 
 if (isset($_GET['facility_id']) && $_GET['facility_id'] != '') {
@@ -45,7 +56,7 @@ getHeader('All Returns');
                     <option value="">All Facilities</option>
                     <?php foreach($facilities as $fac): ?>
                         <option value="<?php echo $fac['id']; ?>" <?php echo (isset($_GET['facility_id']) && $_GET['facility_id'] == $fac['id']) ? 'selected' : ''; ?>>
-                            [<?php echo $fac['facility_code']; ?>] <?php echo $fac['facility_name']; ?>
+                            <?php echo $fac['facility_name']; ?> (<?php echo $fac['facility_code']; ?>)
                         </option>
                     <?php endforeach; ?>
                 </select>

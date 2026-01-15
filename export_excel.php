@@ -39,7 +39,7 @@ $stmt->execute($params);
 
 while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     // Calculate utilization
-    $s = $db->prepare("SELECT SUM(amount) FROM utilizations WHERE return_id = ?");
+    $s = $db->prepare("SELECT SUM(amount) FROM utilizations WHERE return_id = ? AND status = 'Approved'");
     $s->execute(array($row['id']));
     $utilized = $s->fetchColumn() ?: 0;
     $balance = $row['amount_received'] - $utilized;

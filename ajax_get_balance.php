@@ -19,7 +19,7 @@ $stmt->execute(array($return_id));
 $return = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if ($return) {
-    $stmt_util = $db->prepare("SELECT SUM(amount) as total FROM utilizations WHERE return_id = ?");
+    $stmt_util = $db->prepare("SELECT SUM(amount) as total FROM utilizations WHERE return_id = ? AND status = 'Approved'");
     $stmt_util->execute(array($return_id));
     $total = $stmt_util->fetch(PDO::FETCH_ASSOC);
     

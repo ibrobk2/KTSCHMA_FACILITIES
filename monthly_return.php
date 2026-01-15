@@ -46,17 +46,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "All financial fields are required (enter 0 if none).";
     } else {
         // Check for duplicate
-        $stmt = $db->prepare("SELECT id FROM returns WHERE user_id = ? AND month = ? AND year = ?");
-        $stmt->execute(array($user_id, $month, $year));
+        $program = $_SESSION['program'];
+        $stmt = $db->prepare("SELECT id FROM returns WHERE user_id = ? AND month = ? AND year = ? AND program = ?");
+        $stmt->execute(array($user_id, $month, $year, $program));
         if ($stmt->rowCount() > 0) {
-            $error = "A return for this period already exists.";
+            $error = "A return for this period already exists in " . $program . ".";
         } else {
             // Extension handling logic for bank_statement upload would go here if single step, 
             // but requirements often separate uploads. I'll add simple upload here if needed or separate.
             // Let's keep it simple: create header first.
             
-            $stmt = $db->prepare("INSERT INTO returns (user_id, facility_id, month, year, amount_received, balance_before, capitation, fee_for_service, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Draft', NOW())");
-            if ($stmt->execute(array($user_id, $facility_id, $month, $year, $amount, $balance_before, $capitation, $fee_for_service))) {
+            $program = $_SESSION['program'];
+            
+            $stmt = $db->prepare("INSERT INTO returns (user_id, facility_id, month, year, amount_received, program, balance_before, capitation, fee_for_service, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Draft', NOW())");
+            if ($stmt->execute(array($user_id, $facility_id, $month, $year, $amount, $program, $balance_before, $capitation, $fee_for_service))) {
                 $return_id = $db->lastInsertId();
                 header("Location: view_return_detail.php?id=" . $return_id);
                 exit();

@@ -108,11 +108,35 @@ function getHeader($title = "") {
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
+                    <!-- Current Program Indicator -->
+                    <?php if(isset($_SESSION['program'])): ?>
+                    <span class="badge bg-light text-success ms-md-3 d-none d-md-inline-block p-2">
+                        <i class="bi bi-asterisk"></i> <?php echo $_SESSION['program']; ?>
+                    </span>
+                    <?php endif; ?>
+
                     <!-- Mobile Menu Links -->
                     <ul class="navbar-nav me-auto d-md-none border-top mt-3 pt-3">
                         <li class="nav-item">
                             <a class="nav-link text-white" href="dashboard.php">
                                 <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <?php
+                                $db = Database::getInstance()->getConnection();
+                                $stmt_n = $db->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0");
+                                $stmt_n->execute([$_SESSION['user_id']]);
+                                $unread_count = $stmt_n->fetchColumn();
+                            ?>
+                            <a class="nav-link text-white position-relative" href="notifications.php">
+                                <i class="bi bi-bell-fill me-2"></i> Notifications
+                                <?php if ($unread_count > 0): ?>
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
+                                        <?php echo $unread_count; ?>
+                                    </span>
+                                <?php endif; ?>
                             </a>
                         </li>
                         
@@ -125,6 +149,16 @@ function getHeader($title = "") {
                         <li class="nav-item">
                             <a class="nav-link text-white" href="facilities.php">
                                 <i class="bi bi-building me-2"></i> Facilities
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="settings.php">
+                                <i class="bi bi-gear me-2"></i> Settings
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="submission_summary.php">
+                                <i class="bi bi-list-check me-2"></i> Submissions
                             </a>
                         </li>
                         <li class="nav-item">
@@ -149,15 +183,39 @@ function getHeader($title = "") {
                             </a>
                         </li>
                         <?php endif; ?>
+                        <li class="nav-item">
+                             <a class="nav-link text-white" href="select_program.php">
+                                <i class="bi bi-arrow-repeat me-2"></i> Switch Programme
+                            </a>
+                        </li>
                     </ul>
                     
                     <ul class="navbar-nav ms-auto border-top border-md-0 mt-2 mt-md-0 pt-2 pt-md-0">
+                        <!-- Desktop Bell Icon -->
+                        <li class="nav-item d-none d-md-block me-3">
+                             <?php
+                                $db = Database::getInstance()->getConnection();
+                                $stmt_n = $db->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0");
+                                $stmt_n->execute([$_SESSION['user_id']]);
+                                $unread_count = $stmt_n->fetchColumn();
+                            ?>
+                            <a class="nav-link text-white position-relative" href="notifications.php">
+                                <i class="bi bi-bell-fill" style="font-size: 1.2rem;"></i>
+                                <?php if ($unread_count > 0): ?>
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
+                                        <?php echo $unread_count; ?>
+                                    </span>
+                                <?php endif; ?>
+                            </a>
+                        </li>
+
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
                                 <?php echo $_SESSION['full_name']; ?>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="logout.php">Logout</a></li>
+                                <li><a class="dropdown-item" href="select_program.php"><i class="bi bi-arrow-repeat me-2"></i>Switch Programme</a></li>
+                                <li><a class="dropdown-item" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                             </ul>
                         </li>
                     </ul>
@@ -175,6 +233,24 @@ function getHeader($title = "") {
                             </a>
                         </li>
                         
+                        <li class="nav-item">
+                            <?php
+                                // Re-use connection if not already open in this scope (it is usually safe)
+                                $db = Database::getInstance()->getConnection();
+                                $stmt_n = $db->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0");
+                                $stmt_n->execute([$_SESSION['user_id']]);
+                                $unread_count = $stmt_n->fetchColumn();
+                            ?>
+                             <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'notifications.php' ? 'active' : ''; ?>" href="notifications.php">
+                                <i class="bi bi-bell me-2"></i> Notifications
+                                <?php if ($unread_count > 0): ?>
+                                    <span class="badge rounded-pill bg-danger float-end" style="font-size: 0.7rem;">
+                                        <?php echo $unread_count; ?>
+                                    </span>
+                                <?php endif; ?>
+                            </a>
+                        </li>
+                        
                         <?php if(isAdmin()): ?>
                         <li class="nav-item">
                             <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'users.php' ? 'active' : ''; ?>" href="users.php">
@@ -184,6 +260,16 @@ function getHeader($title = "") {
                         <li class="nav-item">
                             <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'facilities.php' ? 'active' : ''; ?>" href="facilities.php">
                                 <i class="bi bi-building me-2"></i> Facilities
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'active' : ''; ?>" href="settings.php">
+                                <i class="bi bi-gear me-2"></i> Settings
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'submission_summary.php' ? 'active' : ''; ?>" href="submission_summary.php">
+                                <i class="bi bi-list-check me-2"></i> Submissions
                             </a>
                         </li>
                         <li class="nav-item">
@@ -205,11 +291,15 @@ function getHeader($title = "") {
                         <li class="nav-item">
                             <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'my_returns.php' ? 'active' : ''; ?>" href="my_returns.php">
                                 <i class="bi bi-list-check me-2"></i> My Returns
+                        <?php endif; ?>
+
+                        <li class="nav-item mt-3">
+                            <a class="nav-link text-secondary" href="select_program.php">
+                                <i class="bi bi-arrow-repeat me-2"></i> Switch Programme
                             </a>
                         </li>
-                        <?php endif; ?>
                         
-                        <li class="nav-item mt-5">
+                        <li class="nav-item">
                             <a class="nav-link text-danger" href="logout.php">
                                 <i class="bi bi-box-arrow-right me-2"></i> Logout
                             </a>
@@ -270,5 +360,19 @@ function getFooter() {
     </body>
     </html>
     <?php
+}
+
+// Settings Helper
+function getSetting($key, $default = '') {
+    $db = Database::getInstance()->getConnection();
+    // Using try-catch to avoid crashing if table doesn't exist yet (during migration)
+    try {
+        $stmt = $db->prepare("SELECT setting_value FROM settings WHERE setting_key = ?");
+        $stmt->execute([$key]);
+        $result = $stmt->fetchColumn();
+        return $result !== false ? $result : $default;
+    } catch (Exception $e) {
+        return $default;
+    }
 }
 ?>

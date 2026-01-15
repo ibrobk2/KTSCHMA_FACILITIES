@@ -11,8 +11,9 @@ $year = isset($_GET['year']) ? $_GET['year'] : date('Y');
 $facility_id = isset($_GET['facility_id']) ? $_GET['facility_id'] : '';
 
 // Build Query
-$where = "r.year = ?";
-$params = array($year);
+$program = $_SESSION['program'];
+$where = "r.year = ? AND r.program = ?";
+$params = array($year, $program);
 
 if ($facility_id) {
     $where .= " AND r.facility_id = ?";
@@ -78,7 +79,7 @@ getHeader('Reports');
                             <option value="">All Facilities</option>
                             <?php foreach($facilities as $fac): ?>
                                 <option value="<?php echo $fac['id']; ?>" <?php echo $facility_id == $fac['id'] ? 'selected' : ''; ?>>
-                                    [<?php echo $fac['facility_code']; ?>] <?php echo $fac['facility_name']; ?>
+                                    <?php echo $fac['facility_name']; ?> (<?php echo $fac['facility_code']; ?>)
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -147,7 +148,7 @@ getHeader('Reports');
                     <?php if(count($report_data) > 0): ?>
                         <?php foreach($report_data as $row): 
                             // Quick utilization fetch for each row (inefficient for large data but fine for PHP 5.2/small scale)
-                            $s = $db->prepare("SELECT SUM(amount) FROM utilizations WHERE return_id = ?");
+                            $s = $db->prepare("SELECT SUM(amount) FROM utilizations WHERE return_id = ? AND status = 'Approved'");
                             $s->execute(array($row['id']));
                             $u_amt = $s->fetchColumn() ?: 0;
                             $bal = $row['amount_received'] - $u_amt;

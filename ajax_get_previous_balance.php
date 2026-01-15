@@ -27,7 +27,7 @@ if ($last_return) {
     $amount_received = $last_return['amount_received'];
     
     // Calculate total utilizations for this return
-    $stmt_util = $db->prepare("SELECT SUM(amount) as total_spent FROM utilizations WHERE return_id = ?");
+    $stmt_util = $db->prepare("SELECT SUM(amount) as total_spent FROM utilizations WHERE return_id = ? AND status = 'Approved'");
     $stmt_util->execute(array($return_id));
     $util_result = $stmt_util->fetch(PDO::FETCH_ASSOC);
     $total_spent = $util_result['total_spent'] ?: 0;
