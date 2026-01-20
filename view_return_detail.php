@@ -79,6 +79,9 @@ getHeader('Return Details');
                     <?php else: ?>
                         <a href="my_returns.php" class="btn btn-sm btn-light">Back to List</a>
                     <?php endif; ?>
+                    <a href="supporting_documents.php?return_id=<?php echo $return['id']; ?>" class="btn btn-sm btn-info ms-2">
+                        <i class="bi bi-file-earmark-check me-1"></i> Manage Retirement Documents
+                    </a>
                 </div>
             </div>
             <div class="card-body">
@@ -88,7 +91,6 @@ getHeader('Return Details');
                         <p><strong>Submitted By:</strong> <?php echo $return['full_name']; ?></p>
                     </div>
                     <div class="col-md-4">
-
                         <p><strong>Balance B/F:</strong> <?php echo formatCurrency($return['balance_before']); ?></p>
                         <p><strong>Capitation:</strong> <?php echo formatCurrency($return['capitation']); ?></p>
                         <p><strong>Fee for Service:</strong> <?php echo formatCurrency($return['fee_for_service']); ?></p>
@@ -103,6 +105,55 @@ getHeader('Return Details');
             </div>
         </div>
     </div>
+</div>
+
+<?php
+// Calculate Programme Specifics
+$prog_spent = [
+    'Admin' => 0,
+    'HR' => 0,
+    'Lab' => 0,
+    'Reserve' => 0
+];
+
+foreach ($utilizations as $u) {
+    if ($u['status'] == 'Approved' && isset($prog_spent[$u['expenditure_type']])) {
+        $prog_spent[$u['expenditure_type']] += $u['amount'];
+    }
+}
+
+$prog_config = [
+    'Admin' => ['icon' => 'bi-briefcase', 'limit' => getSetting('limit_admin', 10), 'color' => 'primary'],
+    'HR' => ['icon' => 'bi-people', 'limit' => getSetting('limit_hr', 10), 'color' => 'info'],
+    'Lab' => ['icon' => 'bi-eyedropper', 'limit' => getSetting('limit_lab', 15), 'color' => 'warning'],
+    'Reserve' => ['icon' => 'bi-piggy-bank', 'limit' => getSetting('limit_reserve', 15), 'color' => 'danger']
+];
+?>
+
+<!-- Programme Cards -->
+<div class="row mb-4">
+    <?php foreach ($prog_config as $name => $config): 
+        $actual_capitation = ($return['amount_received'] * $config['limit']) / 100;
+        $rem_balance = $actual_capitation - $prog_spent[$name];
+    ?>
+    <div class="col-md-3">
+        <div class="card border-start border-<?php echo $config['color']; ?> border-4 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="text-muted text-uppercase small mb-0"><?php echo $name; ?> (<?php echo $config['limit']; ?>%)</h6>
+                    <i class="bi <?php echo $config['icon']; ?> fs-4 text-<?php echo $config['color']; ?>"></i>
+                </div>
+                <h4 class="mb-1"><?php echo formatCurrency($actual_capitation); ?></h4>
+                <div class="mt-3">
+                    <small class="text-muted d-block">Remaining Balance:</small>
+                    <span class="fw-bold <?php echo $rem_balance < 0 ? 'text-danger' : 'text-success'; ?>">
+                        <?php echo formatCurrency($rem_balance); ?>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endforeach; ?>
 </div>
 
 <!-- Utilizations List -->

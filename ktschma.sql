@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 15, 2026 at 08:52 PM
+-- Generation Time: Jan 19, 2026 at 08:27 PM
 -- Server version: 10.1.21-MariaDB
 -- PHP Version: 5.6.30
 
@@ -276,7 +276,9 @@ CREATE TABLE `notifications` (
 --
 
 INSERT INTO `notifications` (`id`, `user_id`, `message`, `link`, `is_read`, `created_at`) VALUES
-(8, 1, 'Approval Request: A user has requested approval for ₦21,000.00 (Admin).', 'view_return_detail.php?id=3', 1, '2026-01-15 20:38:46');
+(8, 1, 'Approval Request: A user has requested approval for ₦21,000.00 (Admin).', 'view_return_detail.php?id=3', 1, '2026-01-15 20:38:46'),
+(9, 2, 'A Supporting Document for Retirement () has been Rejected. Reason: send a clear copy again', 'supporting_documents.php?return_id=', 0, '2026-01-19 20:13:11'),
+(10, 2, 'A Supporting Document for Retirement () has been Approved.', 'supporting_documents.php?return_id=', 0, '2026-01-19 20:14:22');
 
 -- --------------------------------------------------------
 
@@ -307,7 +309,8 @@ CREATE TABLE `returns` (
 
 INSERT INTO `returns` (`id`, `user_id`, `facility_id`, `month`, `year`, `amount_received`, `program`, `status`, `bank_statement`, `created_at`, `updated_at`, `balance_before`, `capitation`, `fee_for_service`) VALUES
 (2, 2, 187, 'January', 2026, '150000.00', NULL, 'Submitted', NULL, '2026-01-15 18:28:29', NULL, '50000.00', '50000.00', '50000.00'),
-(3, 2, 187, 'February', 2026, '200000.00', NULL, 'Draft', NULL, '2026-01-15 18:33:06', NULL, '90000.00', '60000.00', '50000.00');
+(3, 2, 187, 'February', 2026, '200000.00', NULL, 'Submitted', NULL, '2026-01-15 18:33:06', NULL, '90000.00', '60000.00', '50000.00'),
+(4, 2, 187, 'March', 2026, '169000.00', 'Formal Sector', 'Draft', NULL, '2026-01-19 19:33:49', NULL, '169000.00', '0.00', '0.00');
 
 -- --------------------------------------------------------
 
@@ -331,6 +334,32 @@ INSERT INTO `settings` (`id`, `setting_key`, `setting_value`, `created_at`) VALU
 (2, 'limit_hr', '10', '2026-01-15 19:40:49'),
 (3, 'limit_lab', '15', '2026-01-15 19:40:49'),
 (4, 'limit_reserve', '15', '2026-01-15 19:40:49');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `supporting_documents`
+--
+
+CREATE TABLE `supporting_documents` (
+  `id` int(11) NOT NULL,
+  `return_id` int(11) DEFAULT NULL,
+  `utilization_id` int(11) DEFAULT NULL,
+  `user_id` int(11) NOT NULL,
+  `document_type` varchar(255) NOT NULL,
+  `file_path` varchar(255) NOT NULL,
+  `reason` text NOT NULL,
+  `status` enum('Pending','Approved','Rejected') DEFAULT 'Pending',
+  `rejection_reason` text,
+  `created_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `supporting_documents`
+--
+
+INSERT INTO `supporting_documents` (`id`, `return_id`, `utilization_id`, `user_id`, `document_type`, `file_path`, `reason`, `status`, `rejection_reason`, `created_at`) VALUES
+(1, NULL, NULL, 2, 'Complete one month Bank Statement', 'doc_696e7f2d8f8cf.png', 'thanks', 'Approved', '', '2026-01-19 19:59:57');
 
 -- --------------------------------------------------------
 
@@ -384,7 +413,8 @@ CREATE TABLE `utilizations` (
 INSERT INTO `utilizations` (`id`, `return_id`, `description`, `amount`, `expenditure_type`, `status`, `request_note`, `date_spent`, `receipt_file`, `created_at`) VALUES
 (1, 2, 'Petrol', '20000.00', NULL, 'Approved', NULL, '2026-01-15', '69692469aef6a.png', '2026-01-15 18:31:21'),
 (2, 2, 'Transport', '40000.00', NULL, 'Approved', NULL, '2026-01-15', '6969248ad7977.png', '2026-01-15 18:31:54'),
-(4, 3, 'Food', '21000.00', 'Admin', 'Approved', 'Limit Exceeded! You have spent ₦0.00 of ₦20,000.00 allowed for Admin (10% of Total Allocation). Cannot add ₦21,000.00', '2026-01-15', NULL, '2026-01-15 20:38:46');
+(4, 3, 'Food', '21000.00', 'Admin', 'Approved', 'Limit Exceeded! You have spent ₦0.00 of ₦20,000.00 allowed for Admin (10% of Total Allocation). Cannot add ₦21,000.00', '2026-01-15', NULL, '2026-01-15 20:38:46'),
+(5, 3, 'Allowance', '10000.00', 'HR', 'Approved', NULL, '2026-01-19', '696e76ca10221.png', '2026-01-19 19:24:10');
 
 --
 -- Indexes for dumped tables
@@ -419,6 +449,13 @@ ALTER TABLE `settings`
   ADD UNIQUE KEY `setting_key` (`setting_key`);
 
 --
+-- Indexes for table `supporting_documents`
+--
+ALTER TABLE `supporting_documents`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `utilization_id` (`utilization_id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -446,27 +483,32 @@ ALTER TABLE `facilities`
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 --
 -- AUTO_INCREMENT for table `returns`
 --
 ALTER TABLE `returns`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 --
 -- AUTO_INCREMENT for table `settings`
 --
 ALTER TABLE `settings`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 --
+-- AUTO_INCREMENT for table `supporting_documents`
+--
+ALTER TABLE `supporting_documents`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 --
 -- AUTO_INCREMENT for table `utilizations`
 --
 ALTER TABLE `utilizations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 --
 -- Constraints for dumped tables
 --
@@ -477,6 +519,12 @@ ALTER TABLE `utilizations`
 ALTER TABLE `returns`
   ADD CONSTRAINT `returns_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `returns_ibfk_2` FOREIGN KEY (`facility_id`) REFERENCES `facilities` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `supporting_documents`
+--
+ALTER TABLE `supporting_documents`
+  ADD CONSTRAINT `supporting_documents_ibfk_1` FOREIGN KEY (`utilization_id`) REFERENCES `utilizations` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `utilizations`

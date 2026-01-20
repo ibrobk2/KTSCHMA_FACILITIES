@@ -7,14 +7,13 @@ requireAdmin();
 $db = Database::getInstance()->getConnection();
 
 // Default to current month/year
-$selected_month = isset($_GET['month']) ? $_GET['month'] : date('m');
+// Default to current month/year
+$selected_month_num = isset($_GET['month']) ? $_GET['month'] : date('m');
 $selected_year = isset($_GET['year']) ? $_GET['year'] : date('Y');
 $selected_program = isset($_SESSION['program']) ? $_SESSION['program'] : 'Formal Sector';
 
-// Default to current month/year
-$selected_month = isset($_GET['month']) ? $_GET['month'] : date('m');
-$selected_year = isset($_GET['year']) ? $_GET['year'] : date('Y');
-$selected_program = isset($_SESSION['program']) ? $_SESSION['program'] : 'Formal Sector';
+// Convert month number to name for query
+$selected_month = date('F', mktime(0, 0, 0, $selected_month_num, 10));
 
 // --- DATA FETCHING ---
 // 1. All Facilities
@@ -108,7 +107,7 @@ if (isset($_POST['send_reminder_all'])) {
     }
     
     $_SESSION['success'] = "Bulk reminder sent to $total_notified users across " . count($list_pending) . " facilities.";
-    header("Location: submission_summary.php?month=$selected_month&year=$selected_year");
+    header("Location: submission_summary.php?month=$selected_month_num&year=$selected_year");
     exit();
 }
 
@@ -129,7 +128,7 @@ getHeader('Submission Summary');
                                 $m_str = str_pad($m, 2, '0', STR_PAD_LEFT);
                                 $m_name = date('F', mktime(0, 0, 0, $m, 10));
                             ?>
-                                <option value="<?php echo $m_str; ?>" <?php echo $selected_month == $m_str ? 'selected' : ''; ?>><?php echo $m_name; ?></option>
+                                <option value="<?php echo $m_str; ?>" <?php echo $selected_month_num == $m_str ? 'selected' : ''; ?>><?php echo $m_name; ?></option>
                             <?php endfor; ?>
                         </select>
                     </div>

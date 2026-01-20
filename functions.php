@@ -278,6 +278,16 @@ function getHeader($title = "") {
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'supporting_documents.php' ? 'active' : ''; ?>" href="supporting_documents.php">
+                                <i class="bi bi-file-earmark-pdf me-2"></i> View Supporting Documents
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'approved_facilities_report.php' ? 'active' : ''; ?>" href="approved_facilities_report.php">
+                                <i class="bi bi-check-all me-2"></i> Approved Facilities
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'reports.php' ? 'active' : ''; ?>" href="reports.php">
                                 <i class="bi bi-bar-chart me-2"></i> Reports
                             </a>
@@ -291,6 +301,13 @@ function getHeader($title = "") {
                         <li class="nav-item">
                             <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'my_returns.php' ? 'active' : ''; ?>" href="my_returns.php">
                                 <i class="bi bi-list-check me-2"></i> My Returns
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'supporting_documents.php' ? 'active' : ''; ?>" href="supporting_documents.php">
+                                <i class="bi bi-file-earmark-pdf me-2"></i> Supporting Documents
+                            </a>
+                        </li>
                         <?php endif; ?>
 
                         <li class="nav-item mt-3">
@@ -341,7 +358,7 @@ function getFooter() {
         
         <div class="container text-center py-3 mt-4">
             <small class="text-muted d-block mb-1">Powered By:</small>
-            <img src="images/fws_logo.webp" alt="FWS Logo" height="40">
+            <img src="images/fws_logo.jpg" alt="FWS Logo" height="40">
         </div>
         
         <!-- Scripts -->

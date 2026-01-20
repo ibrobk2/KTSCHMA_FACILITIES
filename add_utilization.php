@@ -151,12 +151,34 @@ getHeader('Add Utilization');
                 <form method="POST" action="" enctype="multipart/form-data">
                     <div class="mb-3">
                         <label class="form-label">Expenditure Type <span class="text-danger">*</span></label>
+                        <?php
+                        // Fetch current spent for each type to show balance in dropdown
+                        $types = [
+                            'Admin' => ['limit' => getSetting('limit_admin', 10)],
+                            'HR' => ['limit' => getSetting('limit_hr', 10)],
+                            'Lab' => ['limit' => getSetting('limit_lab', 15)],
+                            'Reserve' => ['limit' => getSetting('limit_reserve', 15)]
+                        ];
+                        
+                        $balances_info = [];
+                        foreach ($types as $name => $cfg) {
+                            $stmt_b = $db->prepare("SELECT SUM(amount) FROM utilizations WHERE return_id = ? AND expenditure_type = ? AND status = 'Approved'");
+                            $stmt_b->execute([$return_id, $name]);
+                            $spent = $stmt_b->fetchColumn() ?: 0;
+                            $limit_val = ($return['amount_received'] * $cfg['limit']) / 100;
+                            $balances_info[$name] = [
+                                'limit_perc' => $cfg['limit'],
+                                'balance' => $limit_val - $spent
+                            ];
+                        }
+                        ?>
                         <select name="expenditure_type" class="form-select" required>
                             <option value="">Select Type</option>
-                            <option value="Admin" <?php echo (isset($_POST['expenditure_type']) && $_POST['expenditure_type'] == 'Admin') ? 'selected' : ''; ?>>Admin (10%)</option>
-                            <option value="HR" <?php echo (isset($_POST['expenditure_type']) && $_POST['expenditure_type'] == 'HR') ? 'selected' : ''; ?>>HR (10%)</option>
-                            <option value="Lab" <?php echo (isset($_POST['expenditure_type']) && $_POST['expenditure_type'] == 'Lab') ? 'selected' : ''; ?>>Lab (15%)</option>
-                            <option value="Reserve" <?php echo (isset($_POST['expenditure_type']) && $_POST['expenditure_type'] == 'Reserve') ? 'selected' : ''; ?>>Reserve (15%)</option>
+                            <?php foreach ($balances_info as $name => $info): ?>
+                                <option value="<?php echo $name; ?>" <?php echo (isset($_POST['expenditure_type']) && $_POST['expenditure_type'] == $name) ? 'selected' : ''; ?>>
+                                    <?php echo $name; ?> (<?php echo $info['limit_perc']; ?>%) - Balance: <?php echo formatCurrency($info['balance']); ?>
+                                </option>
+                            <?php endforeach; ?>
                             <option value="General" <?php echo (isset($_POST['expenditure_type']) && $_POST['expenditure_type'] == 'General') ? 'selected' : ''; ?>>General / Other (Remaining)</option>
                         </select>
                     </div>

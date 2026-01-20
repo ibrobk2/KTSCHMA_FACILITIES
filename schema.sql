@@ -91,6 +91,29 @@ CREATE TABLE IF NOT EXISTS `utilizations` (
   KEY `return_id` (`return_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `supporting_documents`
+--
+
+CREATE TABLE IF NOT EXISTS `supporting_documents` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `return_id` int(11) DEFAULT NULL,
+  `utilization_id` int(11) DEFAULT NULL,
+  `user_id` int(11) NOT NULL,
+  `document_type` varchar(255) NOT NULL,
+  `file_path` varchar(255) NOT NULL,
+  `reason` text NOT NULL,
+  `status` enum('Pending','Approved','Rejected') DEFAULT 'Pending',
+  `rejection_reason` text,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `return_id` (`return_id`),
+  KEY `utilization_id` (`utilization_id`),
+  KEY `user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 --
 -- Constraints for dumped tables
 --
