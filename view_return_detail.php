@@ -6,12 +6,12 @@ require_once 'functions.php';
 requireLogin();
 $db = Database::getInstance()->getConnection();
 
-if (!isset($_GET['id'])) {
+if (!isset($_GET['id']) || !is_numeric($_GET['id']) || $_GET['id'] <= 0) {
     header("Location: dashboard.php");
     exit();
 }
 
-$return_id = $_GET['id'];
+$return_id = (int)$_GET['id'];
 $user_id = $_SESSION['user_id'];
 $is_admin = isAdmin();
 
@@ -91,14 +91,20 @@ getHeader('Return Details');
                         <p><strong>Submitted By:</strong> <?php echo $return['full_name']; ?></p>
                     </div>
                     <div class="col-md-4">
-                        <p><strong>Balance B/F:</strong> <?php echo formatCurrency($return['balance_before']); ?></p>
-                        <p><strong>Capitation:</strong> <?php echo formatCurrency($return['capitation']); ?></p>
+                        <p><strong>Balance B/F (Reserved):</strong> <?php echo formatCurrency($return['balance_before']); ?></p>
+                        <p><strong>Capitation (Total):</strong> <?php echo formatCurrency($return['capitation']); ?></p>
                         <p><strong>Fee for Service:</strong> <?php echo formatCurrency($return['fee_for_service']); ?></p>
                         <hr>
-                        <p><strong>Total Available:</strong> <span class="text-success h5"><?php echo formatCurrency($return['amount_received']); ?></span></p>
-                        <p><strong>Total Utilized:</strong> <span class="text-secondary h5"><?php echo formatCurrency($total_utilized); ?></span></p>
+                        <p><strong>Reserved this Month (15% + B/F):</strong> <span class="text-danger h6"><?php echo formatCurrency($return['reserved_amount']); ?></span></p>
+                        <hr>
+                        <p><strong>Gross Spendable (85% + Fee):</strong> <?php echo formatCurrency($return['amount_received'] + $return['dmsa_amount']); ?></p>
+                        <p><strong>Less DMSA Drug Fund (50%):</strong> <span class="text-danger h6">- <?php echo formatCurrency($return['dmsa_amount']); ?></span></p>
+                        <hr>
+                        <p><strong>Net Spendable Available:</strong> <span class="text-success h5"><?php echo formatCurrency($return['amount_received']); ?></span></p>
+                        <small class="text-muted">(Remaining 35% Capitation + Fee for Service)</small>
                     </div>
                     <div class="col-md-4">
+                        <p><strong>Total Utilized:</strong> <span class="text-secondary h5"><?php echo formatCurrency($total_utilized); ?></span></p>
                         <p><strong>Balance:</strong> <span class="h5 <?php echo $balance < 0 ? 'text-danger' : 'text-primary'; ?>"><?php echo formatCurrency($balance); ?></span></p>
                     </div>
                 </div>
@@ -133,7 +139,7 @@ $prog_config = [
 <!-- Programme Cards -->
 <div class="row mb-4">
     <?php foreach ($prog_config as $name => $config): 
-        $actual_capitation = ($return['amount_received'] * $config['limit']) / 100;
+        $actual_capitation = ($return['capitation'] * $config['limit']) / 100;
         $rem_balance = $actual_capitation - $prog_spent[$name];
     ?>
     <div class="col-md-3">

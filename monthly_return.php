@@ -15,13 +15,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $month = $_POST['month'];
     $year = $_POST['year'];
     
-    // New Fields
-    $balance_before = filter_var($_POST['balance_before'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-    $capitation = filter_var($_POST['capitation'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-    $fee_for_service = filter_var($_POST['fee_for_service'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+    // New Fields (Strip commas before sanitizing)
+    $balance_before = str_replace(',', '', $_POST['balance_before']);
+    $capitation = str_replace(',', '', $_POST['capitation']);
+    $fee_for_service = str_replace(',', '', $_POST['fee_for_service']);
     
-    // Calculate Total Automatically
-    $amount = $balance_before + $capitation + $fee_for_service;
+    $balance_before = filter_var($balance_before, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+    $capitation = filter_var($capitation, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+    $fee_for_service = filter_var($fee_for_service, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+    
+    // Calculate Total Automatically (Move 15% Capitation and Balance Before to Reserved)
+    $reserve_from_capitation = $capitation * 0.15;
+    $dmsa_amount = $capitation * 0.50;
+    $reserved_this_month = $balance_before + $reserve_from_capitation;
+    
+    // Spendable Amount: 35% Capitation + Fee for Service (85% - 50% DMSA = 35%)
+    $amount = ($capitation - $reserve_from_capitation - $dmsa_amount) + $fee_for_service;
     
     $user_id = $_SESSION['user_id'];
     $facility_id = $_SESSION['facility_id'];
@@ -58,9 +67,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $program = $_SESSION['program'];
             
-            $stmt = $db->prepare("INSERT INTO returns (user_id, facility_id, month, year, amount_received, program, balance_before, capitation, fee_for_service, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Draft', NOW())");
-            if ($stmt->execute(array($user_id, $facility_id, $month, $year, $amount, $program, $balance_before, $capitation, $fee_for_service))) {
+            $stmt = $db->prepare("INSERT INTO returns (user_id, facility_id, month, year, amount_received, program, balance_before, capitation, fee_for_service, reserved_amount, dmsa_amount, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Draft', NOW())");
+            if ($stmt->execute(array($user_id, $facility_id, $month, $year, $amount, $program, $balance_before, $capitation, $fee_for_service, $reserved_this_month, $dmsa_amount))) {
                 $return_id = $db->lastInsertId();
+                
+                // Update Facility Reserved Funds with only the 15% portion
+                $updFac = $db->prepare("UPDATE facilities SET reserved_funds = reserved_funds + ? WHERE id = ?");
+                $updFac->execute([$reserve_from_capitation, $facility_id]);
+                
                 header("Location: view_return_detail.php?id=" . $return_id);
                 exit();
             } else {
@@ -116,14 +130,14 @@ getHeader('New Monthly Return');
                             <label class="form-label">Balance Before (B/F)</label>
                             <div class="input-group">
                                 <span class="input-group-text">₦</span>
-                                <input type="number" step="0.01" name="balance_before" id="balance_before" class="form-control calc-input" required value="0">
+                                <input type="text" name="balance_before" id="balance_before" class="form-control calc-input" required value="0">
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Capitation</label>
                             <div class="input-group">
                                 <span class="input-group-text">₦</span>
-                                <input type="number" step="0.01" name="capitation" id="capitation" class="form-control calc-input" required value="0">
+                                <input type="text" name="capitation" id="capitation" class="form-control calc-input" required value="0">
                             </div>
                         </div>
                     </div>
@@ -133,16 +147,44 @@ getHeader('New Monthly Return');
                             <label class="form-label">Fee for Service</label>
                             <div class="input-group">
                                 <span class="input-group-text">₦</span>
-                                <input type="number" step="0.01" name="fee_for_service" id="fee_for_service" class="form-control calc-input" required value="0">
+                                <input type="text" name="fee_for_service" id="fee_for_service" class="form-control calc-input" required value="0">
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Total Amount</label>
+                            <label class="form-label">Gross Allocation (85%)</label>
                             <div class="input-group">
                                 <span class="input-group-text">₦</span>
-                                <input type="number" step="0.01" name="amount_display" id="total_amount" class="form-control" readonly style="background-color: #e9ecef;">
+                                <input type="text" id="gross_display" class="form-control" readonly style="background-color: #f8f9fa;">
                             </div>
-                            <small class="text-muted">Auto-calculated (B/F + Capitation + Fee)</small>
+                            <small class="text-muted">85% Capitation + Fee for Service</small>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">DMSA Drug Fund (50%)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₦</span>
+                                <input type="text" id="dmsa_display" class="form-control" readonly style="background-color: #fff3f3; color: #a94442;">
+                            </div>
+                            <small class="text-muted">Deducted from Gross Allocation</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Net Spendable Allocation (35%)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₦</span>
+                                <input type="text" name="amount_display" id="total_amount" class="form-control" readonly style="background-color: #e9ecef; font-weight: bold; color: green; font-size: 1.1rem;">
+                            </div>
+                            <small class="text-muted">Net available for facility use</small>
+                        </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Reserved Fund (B/F + 15%)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₦</span>
+                                <input type="text" id="reserved_display" class="form-control" readonly style="background-color: #f8f9fa;">
+                            </div>
+                            <small class="text-muted">Balance B/F + 15% Of Current Capitation</small>
                         </div>
                     </div>
 
@@ -150,17 +192,65 @@ getHeader('New Monthly Return');
                         document.addEventListener('DOMContentLoaded', function() {
                             const inputs = document.querySelectorAll('.calc-input');
                             const totalDisplay = document.getElementById('total_amount');
+                            const reservedDisplay = document.getElementById('reserved_display');
 
-                            function calculateTotal() {
-                                let total = 0;
-                                inputs.forEach(input => {
-                                    total += parseFloat(input.value) || 0;
-                                });
-                                totalDisplay.value = total.toFixed(2);
+                            function formatNumber(num) {
+                                return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
+                            }
+
+                            function parseNumber(str) {
+                                if (!str) return 0;
+                                return parseFloat(str.toString().replace(/,/g, '')) || 0;
+                            }
+
+                             function calculateTotal() {
+                                let balance_before = parseNumber(document.getElementById('balance_before').value);
+                                let capitation = parseNumber(document.getElementById('capitation').value);
+                                let fee = parseNumber(document.getElementById('fee_for_service').value);
+
+                                let reserve_from_capitation = capitation * 0.15;
+                                let dmsa_amount = capitation * 0.50;
+                                let gross_allocation = (capitation - reserve_from_capitation) + fee;
+                                let reserved_this_month = balance_before + reserve_from_capitation;
+                                let net_spendable = gross_allocation - dmsa_amount;
+
+                                totalDisplay.value = formatNumber(net_spendable);
+                                reservedDisplay.value = formatNumber(reserved_this_month);
+                                if(document.getElementById('gross_display')) {
+                                    document.getElementById('gross_display').value = formatNumber(gross_allocation);
+                                }
+                                if(document.getElementById('dmsa_display')) {
+                                    document.getElementById('dmsa_display').value = formatNumber(dmsa_amount);
+                                }
                             }
 
                             inputs.forEach(input => {
-                                input.addEventListener('input', calculateTotal);
+                                input.addEventListener('input', function() {
+                                    // Strip non-numeric and non-dot
+                                    let val = this.value.replace(/[^\d.]/g, '');
+                                    // Avoid multiple dots
+                                    let parts = val.split('.');
+                                    if(parts.length > 2) val = parts[0] + '.' + parts.slice(1).join('');
+                                    this.value = val;
+                                    calculateTotal();
+                                });
+
+                                input.addEventListener('blur', function() {
+                                    let val = parseNumber(this.value);
+                                    if(!isNaN(val)) {
+                                        this.value = formatNumber(val);
+                                    }
+                                });
+
+                                // Format on focus to remove commas for easier editing (optional)
+                                input.addEventListener('focus', function() {
+                                    let val = parseNumber(this.value);
+                                    if(val === 0) {
+                                        this.value = '';
+                                    } else {
+                                        this.value = val.toString().replace(/,/g, '');
+                                    }
+                                });
                             });
                             
                             // Initial calculation
@@ -172,9 +262,9 @@ getHeader('New Monthly Return');
                                 .then(data => {
                                     if (data.balance !== undefined) {
                                         const balanceInput = document.getElementById('balance_before');
-                                        // Only set if currently 0 (to avoid overwriting if user already typed, though this is on load)
-                                        if (balanceInput.value == 0 || balanceInput.value == '') {
-                                            balanceInput.value = parseFloat(data.balance).toFixed(2);
+                                        const currentVal = parseNumber(balanceInput.value);
+                                        if (currentVal == 0) {
+                                            balanceInput.value = formatNumber(data.balance);
                                             calculateTotal();
                                         }
                                     }

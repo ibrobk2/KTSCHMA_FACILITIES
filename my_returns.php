@@ -51,13 +51,11 @@ getHeader('My Returns');
                                 <a href="edit_return.php?id=<?php echo $row['id']; ?>" class="btn btn-sm btn-warning">
                                     <i class="bi bi-pencil"></i> Edit
                                 </a>
-                                <?php if($row['status'] == 'Draft'): ?>
                                 <a href="delete_return.php?id=<?php echo $row['id']; ?>" 
                                    class="btn btn-sm btn-danger"
-                                   onclick="return confirm('Delete this return?')">
+                                   onclick="return confirm('Delete this return? This will also revert reserved funds and delete all utilizations.')">
                                     <i class="bi bi-trash"></i>
                                 </a>
-                                <?php endif; ?>
                             </td>
                         </tr>
                         <?php endforeach; ?>

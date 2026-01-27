@@ -55,6 +55,11 @@ if (isAdmin()) {
     $recent_stmt = $db->prepare("SELECT * FROM returns WHERE user_id = ? AND program = ? ORDER BY created_at DESC LIMIT 5");
     $recent_stmt->execute([$user_id, $program]);
     $recent_returns = $recent_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Reserved funds for facility
+    $stmt_res = $db->prepare("SELECT reserved_funds FROM facilities WHERE id = ?");
+    $stmt_res->execute([$_SESSION['facility_id']]);
+    $reserved_funds = $stmt_res->fetchColumn() ?: 0;
 }
 
 getHeader('Dashboard');
@@ -100,7 +105,7 @@ getHeader('Dashboard');
             </div>
         </div>
     <?php else: ?>
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div class="card border-primary h-100">
                 <div class="card-body text-center">
                     <h5 class="card-title text-muted">My Returns Submitted</h5>
@@ -108,7 +113,7 @@ getHeader('Dashboard');
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div class="card border-success h-100">
                 <div class="card-body text-center">
                     <h5 class="card-title text-muted">Total Utilized Funds</h5>
@@ -116,7 +121,15 @@ getHeader('Dashboard');
                 </div>
             </div>
         </div>
-    <?php endif; ?>
+        <div class="col-md-4">
+            <div class="card border-danger h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-muted">Total Reserved Funds</h5>
+                    <h2 class="display-4 text-danger"><?php echo formatCurrency($reserved_funds); ?></h2>
+                </div>
+            </div>
+        </div>
+<?php endif; ?>
 </div>
 
 <div class="card">

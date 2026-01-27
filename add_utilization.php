@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             if (isset($limits[$expenditure_type])) {
                 $percentage = $limits[$expenditure_type];
-                $max_allowed = $return['amount_received'] * $percentage;
+                $max_allowed = $return['capitation'] * $percentage;
                 
                 // Get current spent for this type
                 $stmt = $db->prepare("SELECT SUM(amount) FROM utilizations WHERE return_id = ? AND expenditure_type = ? AND status = 'Approved'");
@@ -165,7 +165,7 @@ getHeader('Add Utilization');
                             $stmt_b = $db->prepare("SELECT SUM(amount) FROM utilizations WHERE return_id = ? AND expenditure_type = ? AND status = 'Approved'");
                             $stmt_b->execute([$return_id, $name]);
                             $spent = $stmt_b->fetchColumn() ?: 0;
-                            $limit_val = ($return['amount_received'] * $cfg['limit']) / 100;
+                            $limit_val = ($return['capitation'] * $cfg['limit']) / 100;
                             $balances_info[$name] = [
                                 'limit_perc' => $cfg['limit'],
                                 'balance' => $limit_val - $spent

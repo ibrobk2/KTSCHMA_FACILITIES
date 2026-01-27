@@ -107,6 +107,7 @@ CREATE TABLE IF NOT EXISTS `supporting_documents` (
   `reason` text NOT NULL,
   `status` enum('Pending','Approved','Rejected') DEFAULT 'Pending',
   `rejection_reason` text,
+  `verify_by` varchar(255) DEFAULT NULL,
   `created_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
   KEY `return_id` (`return_id`),

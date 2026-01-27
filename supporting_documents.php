@@ -78,8 +78,8 @@ if ($is_admin && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_ac
     if ($status === 'Rejected' && empty($rejection_reason)) {
         $error = "Rejection reason is required.";
     } else {
-        $stmt = $db->prepare("UPDATE supporting_documents SET status = ?, rejection_reason = ? WHERE id = ?");
-        $stmt->execute([$status, $rejection_reason, $doc_id]);
+        $stmt = $db->prepare("UPDATE supporting_documents SET status = ?, rejection_reason = ?, verify_by = ? WHERE id = ?");
+        $stmt->execute([$status, $rejection_reason, $_SESSION['full_name'], $doc_id]);
         
         // Notify User
         $stmt_doc = $db->prepare("SELECT user_id, return_id FROM supporting_documents WHERE id = ?");
@@ -376,6 +376,11 @@ getHeader('Supporting Documents');
                                             <?php endif; ?>
                                         <?php else: ?>
                                             <span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Pending</span>
+                                        <?php endif; ?>
+                                        <?php if(isset($d['verify_by']) && $d['verify_by']): ?>
+                                            <div class="small text-muted mt-1">
+                                                <i class="bi bi-person-check-fill me-1"></i>Verified by: <?php echo $d['verify_by']; ?>
+                                            </div>
                                         <?php endif; ?>
                                     </td>
                                     <td class="text-end">
